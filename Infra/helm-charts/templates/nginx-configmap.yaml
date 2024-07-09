@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-nginx-config
+data:
+  default.conf: |
+    limit_conn_zone $server_name zone=global:10m;
+    limit_conn_status 503;
+    proxy_cache_path /opt/cache levels=1:2 keys_zone=global_cache:10m;
+
+    server {
+        listen {{ .Values.nginx.config.serverPort }};
+        server_name localhost;
+
+        location ~* ^.+\.(css|js)$
+          {
+          root   /app;
+          }
+
+        location / {
+            limit_conn global 10;
+            proxy_cache global_cache;
+            proxy_cache_lock on;
+            proxy_cache_background_update on;
+            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+            proxy_pass http://127.0.0.1:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }

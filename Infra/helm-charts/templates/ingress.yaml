@@ -1,0 +1,29 @@
+{{- $serviceName := .Release.Name -}}
+{{- $val := .Values -}}
+{{- $hosts := .Values.hosts -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }} 
+  annotations:
+    kubernetes.io/ingress.class: alb
+spec:
+  tls:
+  - hosts:
+    - {{ $host }}.{{ $val.domain }}
+  rules:
+    {{- range $host := .Values.hosts }}
+    {{- if eq $host $val.domain }}
+    - host: {{ $host }} {{ else }}
+    - host: {{ $host }}.{{ $val.domain }} {{ end }}
+      http:
+        paths:
+        - path: {{ default "/" $val.path }}
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: {{ $serviceName }}
+              port:
+                number: 8082
+    {{ end }}
+{{ end }}

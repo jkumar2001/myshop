@@ -1,0 +1,43 @@
+image:
+  repository: jaykumar2001/myshop:latest
+  pullPolicy: Always
+  tag: "latest"
+
+environment:
+    AWS_ACCESS_KEY_ID: SDFSDFS
+    AWS_SECRET_ACCESS_KEY: 323SDFSFS
+    AWS_S3_BUCKET: myshop-csv-bucket
+
+nginx:
+  image:
+    repository: nginx
+    tag: "1.21-alpine"
+    pullPolicy: Always
+  config:
+    serverPort: 80
+
+service:
+  type: ClusterIP
+  port: 80
+
+hosts:
+  - myshop
+
+resources:
+    requests:
+        cpu: 200m
+        memory: 256Mi
+replicas: 4
+
+hpa:
+    maxReplicas: 10
+    cpu: 80
+    memory: 80
+
+
+nodeSelector:
+  - spot-group
+
+tolerations: []
+
+
